@@ -1,5 +1,5 @@
 from .contract import Contract, ContractLine
-from .annualize import annualize
+from .annualize import annualize, active_check
 
 from datetime import date
 from typing import List
@@ -7,6 +7,7 @@ from typing import List
 import pandas as pd
 import numpy as np
 from dateutil.relativedelta import relativedelta
+
 
 def get_end_of_month_range(start: date, end: date) -> np.ndarray:
     """Helper function to get a list of end of month dates.
@@ -25,6 +26,7 @@ def get_end_of_month_range(start: date, end: date) -> np.ndarray:
         end_of_month_range.append(working_date + relativedelta(day=31))
         working_date = working_date + relativedelta(months=1)
     return np.array(end_of_month_range)
+
 
 def build_contracts_table(contracts: List[Contract]) -> pd.DataFrame:
     """Takes inputed Contract(s) converts to usable DataFrame.
@@ -65,7 +67,10 @@ def build_contracts_table(contracts: List[Contract]) -> pd.DataFrame:
     )
     return df
 
-def build_acv_table(contracts: List[Contract], by_lines: bool = True) -> pd.DataFrame:
+
+def build_acv_table(
+    contracts: List[Contract], by_lines: bool = True, include_deferred: bool = False
+) -> pd.DataFrame:
     """_summary_
 
     Args:
@@ -87,26 +92,29 @@ def build_acv_table(contracts: List[Contract], by_lines: bool = True) -> pd.Data
         columns={0: "period"}
     )
 
-
     acv_table = range.merge(build_contracts_table(contracts), how="cross")
 
-    col_name = 'line' if by_lines else 'header'
+    col_name = "line" if by_lines else "header"
 
     acv_table["acv"] = acv_table.apply(
-        lambda row: annualize(
-            ContractLine(
-                row.line_amount,
-                row[f"{col_name}_start_date"],
-                row[f"{col_name}_end_date"],
-                row.item_sku,
-                row.renewable,
-            ),
-
-            row.period,
-            "Month",
-            True,
+        lambda row: (
+            annualize(
+                ContractLine(
+                    row.line_amount,
+                    row[f"{col_name}_start_date"],
+                    row[f"{col_name}_end_date"],
+                    row.item_sku,
+                    row.renewable,
+                ),
+                row.period,
+                "Month",
+                True,
+            )
+            if active_check(
+                row[f"{col_name}_start_date"], row[f"{col_name}_end_date"], row.period
+            )
+            else 0
         ),
-
         axis=1,
     )
 
@@ -124,4 +132,4 @@ def build_acv_table(contracts: List[Contract], by_lines: bool = True) -> pd.Data
         )
     )
 
-    return acv_table['acv']
+    return acv_table["acv"]

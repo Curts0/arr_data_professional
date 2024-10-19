@@ -6,7 +6,7 @@ from calendar import isleap
 
 
 def active_check(start_date: date, end_date: date, period: date) -> bool:
-    """Helper func.
+    """Is the Contract Active?
 
     `True` == Yes contract is active in period.
     `False`== No contract is not active in period.
@@ -54,6 +54,8 @@ def get_contract_term(
     Returns:
         int: Contract Term #.
     """
+
+    # 1
     math_end_date = end_date + timedelta(days=1)
     contract_term_length_month = (math_end_date.year - start_date.year) * 12 + (
         math_end_date.month - start_date.month
@@ -66,6 +68,7 @@ def get_contract_term(
         start_date, end_date
     )
 
+    # 2
     contract_term_mapping = {
         "Year": contract_term_length_year,
         "Quarter": contract_term_length_quarter,
@@ -83,18 +86,19 @@ def annualize(
     period: date,
     interval_str: INTERVAL,
     generalize_leap_year: bool = True,
-    print_details: bool = False,
+    print_details: bool = False
 ) -> int:
     """Takes the input of `ContractHeader or `ContractLine` dataclass and annualizes tcv.
 
     Args:
         contract (ContractHeader | Contract Line): See dataclasses.
+
         period (date): The date in which we are looking at the ARR.
             Example, what is the ACV on Jan 31, 2024. Jan 31, 2024
             would be the `period`.
         interval_str (INTERVAL): The options to chose from when deciding
             what interval to multiply `tcv` by. Possible options are:
-            Year, Quarter, Month, Day.
+            "Year", "Quarter", "Month", "Day".
         generalize_leap_year (bool): Toggle to decide who to handle leap years.
             `True` will not consider leap years and set all years to 365 days.
             `False` will call `calendar.isleap(year)` of the `period` value
@@ -123,25 +127,17 @@ def annualize(
     )
 
     # 4
-    if contract.start_date <= period <= contract.end_date:
-
-        active = 1
-    else:
-        active = 0
-
-    # 5
     if print_details:
         print(contract)
         print(f"Period: {period}")
         print(f"Generalize Leap Year: {generalize_leap_year}")
         print(f"Time Interval: {interval_str} - {time_interval}")
         print(f"Contract Term: {contract_term}")
-        print(f"Active: {active}")
 
-    # 6
+    # 5
     try:
         fraction = time_interval / contract_term
     except ZeroDivisionError:
         fraction = 0
 
-    return contract.amount * (fraction) * active
+    return contract.amount * (fraction)
