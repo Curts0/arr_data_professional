@@ -14,6 +14,15 @@ def active_check(start_date: date, end_date: date, period: date) -> bool:
     return start_date <= period <= end_date
 
 
+def deferred_check(bookings_date: date, start_date: date, period: date) -> bool:
+    """Is the Contract Deferred?
+
+    `True` == Yes contract is deferred in period.
+    `False`== No contract is not deferred in period.
+    """
+    return bookings_date < start_date and period < start_date
+
+
 def count_leap_days(start_date: date, end_date: date) -> int:
     """Helper function to output the # of leap days in date range.
 
@@ -86,7 +95,7 @@ def annualize(
     period: date,
     interval_str: INTERVAL,
     generalize_leap_year: bool = True,
-    print_details: bool = False
+    print_details: bool = False,
 ) -> int:
     """Takes the input of `ContractHeader or `ContractLine` dataclass and annualizes tcv.
 

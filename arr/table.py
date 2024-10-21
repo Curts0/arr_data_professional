@@ -1,8 +1,8 @@
 from .contract import Contract, ContractLine
-from .annualize import annualize, active_check
+from .annualize import annualize, active_check, deferred_check
 
 from datetime import date
-from typing import List
+from typing import List, Literal
 
 import pandas as pd
 import numpy as np
@@ -68,8 +68,39 @@ def build_contracts_table(contracts: List[Contract]) -> pd.DataFrame:
     return df
 
 
+def row_annualization(
+    row: pd.Series, col_name: Literal["line", "header"], include_deferred: bool
+) -> int:
+    amount = annualize(
+        ContractLine(
+            row.line_amount,
+            row[f"{col_name}_start_date"],
+            row[f"{col_name}_end_date"],
+            row.item_sku,
+            row.renewable,
+        ),
+        row.period,
+        "Month",
+        True,
+    )
+    active = active_check(
+        row[f"{col_name}_start_date"], row[f"{col_name}_end_date"], row.period
+    )
+
+    deferred = deferred_check(
+        row.booking_date, row[f"{col_name}_start_date"], row.period
+    )
+
+    if active:
+        return amount
+    elif include_deferred and deferred:
+        return amount
+    else:
+        return 0
+
+
 def build_acv_table(
-    contracts: List[Contract], by_lines: bool = True, include_deferred: bool = False
+    contracts: List[Contract], by_lines: bool = True, include_deferred: bool = True
 ) -> pd.DataFrame:
     """_summary_
 
@@ -85,7 +116,9 @@ def build_acv_table(
     for contract in contracts:
         all_lines += contract.lines
 
-    min_date = min([line.start_date for line in all_lines])
+    min_booking_date = min([contract.header.booking_date for contract in contracts])
+    min_start_date = min([line.start_date for line in all_lines])
+    min_date = min(min_booking_date, min_start_date)
     max_date = max([line.end_date for line in all_lines])
 
     range = pd.DataFrame(get_end_of_month_range(min_date, max_date)).rename(
@@ -97,24 +130,7 @@ def build_acv_table(
     col_name = "line" if by_lines else "header"
 
     acv_table["acv"] = acv_table.apply(
-        lambda row: (
-            annualize(
-                ContractLine(
-                    row.line_amount,
-                    row[f"{col_name}_start_date"],
-                    row[f"{col_name}_end_date"],
-                    row.item_sku,
-                    row.renewable,
-                ),
-                row.period,
-                "Month",
-                True,
-            )
-            if active_check(
-                row[f"{col_name}_start_date"], row[f"{col_name}_end_date"], row.period
-            )
-            else 0
-        ),
+        lambda row: row_annualization(row, col_name, include_deferred),
         axis=1,
     )
 
