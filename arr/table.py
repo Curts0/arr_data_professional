@@ -102,15 +102,31 @@ def row_annualization(
 def build_acv_table(
     contracts: List[Contract], by_lines: bool = True, include_deferred: bool = True
 ) -> pd.DataFrame:
-    """_summary_
+    """Builds ACV DataFrame.
+
+    Takes list of inputed `Contracts` and first builds a regular
+    contract table with `build_contracts_table`. Then cross-joins
+    with possible date values from `get_end_of_month_range`.
+    Month range is determined by oldest and newest possible dates
+    that are provided in the contracts. Depending on annualizing
+    by header or by lines it will annualize the expected results.
 
     Args:
-        df (pd.DataFrame): _description_
-        by_lines (bool, optional): _description_. Defaults to True.
+        contracts (List[Contract]): A list of the `Contract` dataclass.
+        by_lines (bool, optional): bool to determine whether to
+            annualize by header or by lines. If `True`, will annualize
+            by lines, `False` will annualize by header. Defaults to True.
+        include_deferred (bool, optional): bool to determine whether to
+            include deferred ARR or not. If `True` data will include
+            deferred ARR. `False` data will not include deferred ARR.
+            Defaults to True.
 
     Returns:
-        pd.DataFrame: _description_
+        pd.DataFrame: Pandas dataframe as a matrix. The dates are the
+            columns and contract id, item_sku, and renewability as
+            the rows. ACV will be the values.
     """
+    # 1
     all_lines = []
 
     for contract in contracts:
@@ -125,8 +141,10 @@ def build_acv_table(
         columns={0: "period"}
     )
 
+    # 2
     acv_table = range.merge(build_contracts_table(contracts), how="cross")
 
+    # 3
     col_name = "line" if by_lines else "header"
 
     acv_table["acv"] = acv_table.apply(
@@ -134,6 +152,7 @@ def build_acv_table(
         axis=1,
     )
 
+    # 4
     cols = ["period", "id", "item_sku", "renewable"]
 
     acv_table = acv_table[["period", "id", "item_sku", "renewable", "acv"]]

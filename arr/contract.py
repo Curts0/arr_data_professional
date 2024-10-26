@@ -8,7 +8,7 @@ class ContractHeader:
     """Dataclass to handle the header of a contract.
 
     Args:
-        tcv (int): Total contract value.
+        amount (int): Total contract value.
         start_date (date): The start date of the Contract.
         end_date (date): The end date of the Contract.
         booking_date (date): The date the contract was booked.
@@ -31,7 +31,7 @@ class ContractLine:
     """Dataclass to handle contract lines.
 
     Args:
-        tcv (int): Total Contract Value.
+        amount (int): Total value of the line.
         start_date (date): The Start Date of the Contract.
         end_date (date): The End Date of the Contract.
         item_sku (int): To designate item skus
