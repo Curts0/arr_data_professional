@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from datetime import date
 from typing import List
 
+import pandas as pd
+
 
 @dataclass
 class ContractHeader:
@@ -40,6 +42,8 @@ class ContractLine:
     amount: int
     start_date: date
     end_date: date
+    # TODO: switch item_sku to item: str
+    # And fix everything that breaks...
     item_sku: int
     renewable: bool
 
@@ -86,3 +90,13 @@ class Contract:
 
     def __repr__(self) -> str:
         return repr_builder(self)
+
+    def build_df(self) -> pd.DataFrame:
+        contract_dict = self.__dict__.copy()
+        contract_dict["header"] = self.header.__dict__.copy()
+        contract_dict["lines"] = [line.__dict__.copy() for line in self.lines]
+
+        df = pd.json_normalize(contract_dict)
+        lines = pd.DataFrame.from_dict(df["lines"].iloc[0]).add_prefix("line.")
+        df = df.merge(lines, how="cross").drop(columns="lines")
+        return df
