@@ -42,32 +42,33 @@ class ContractLine:
     amount: int
     start_date: date
     end_date: date
-    # TODO: switch item_sku to item: str
-    # And fix everything that breaks...
-    item_sku: int
+    product: str
     renewable: bool
 
 
 def repr_builder(contract):
-    # TODO: Add customer name to repr
     tcv = "{:,}".format(contract.header.amount)
-    title = "{:^55}".format(
+    customer_name = (
+        "Example Customer" if contract.customer is None else contract.customer
+    )
+    customer = "{:^60}".format(customer_name)
+    title = "{:^60}".format(
         f"Contract #{str(contract.id)} - ${tcv} - {contract.header.booking_date}"
     )
-    header = "{:^55}".format(
+    header = "{:^60}".format(
         f"{contract.header.start_date} - {contract.header.end_date}"
     )
 
-    buffer = "*" * 55 + "\n"
-    full_line_text = buffer + "sku\tstart date\tend date\tamount\trenewable\n"
+    buffer = "*" * 60 + "\n"
+    full_line_text = buffer + "product\tstart date\tend date\tamount\trenewable\n"
     full_line_text += buffer
 
     for line in contract.lines:
         fields = [
-            line.item_sku,
+            line.product,
             line.start_date,
             line.end_date,
-            line.amount,
+            "${:,}".format(line.amount),
             line.renewable,
         ]
         fields = list(map(str, fields))
@@ -76,7 +77,7 @@ def repr_builder(contract):
 
     full_line_text += buffer
 
-    return "\n".join([title, header, full_line_text])
+    return "\n".join([customer, title, header, full_line_text])
 
 
 @dataclass
@@ -100,3 +101,26 @@ class Contract:
         lines = pd.DataFrame.from_dict(df["lines"].iloc[0]).add_prefix("line.")
         df = df.merge(lines, how="cross").drop(columns="lines")
         return df
+
+    @staticmethod
+    def from_df(df: pd.DataFrame):
+        return Contract(
+            df.iloc[0]["id"],
+            ContractHeader(
+                df.iloc[0]["header.amount"],
+                df.iloc[0]["header.start_date"],
+                df.iloc[0]["header.end_date"],
+                df.iloc[0]["header.booking_date"],
+            ),
+            [
+                ContractLine(
+                    line[1]["line.amount"],
+                    line[1]["line.start_date"],
+                    line[1]["line.end_date"],
+                    line[1]["line.product"],
+                    line[1]["line.renewable"],
+                )
+                for line in df.iterrows()
+            ],
+            df.iloc[0]["customer"],
+        )
