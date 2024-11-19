@@ -101,7 +101,6 @@ def annualize(
 
     Args:
         contract (ContractHeader | Contract Line): See dataclasses.
-
         period (date): The date in which we are looking at the ARR.
             Example, what is the ACV on Jan 31, 2024. Jan 31, 2024
             would be the `period`.

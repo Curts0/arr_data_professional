@@ -45,6 +45,7 @@ class ContractLine:
 
 
 def repr_builder(contract):
+    # TODO: Add customer name to repr
     tcv = "{:,}".format(contract.header.amount)
     title = "{:^55}".format(
         f"Contract #{str(contract.id)} - ${tcv} - {contract.header.booking_date}"
@@ -81,6 +82,7 @@ class Contract:
     id: int
     header: ContractHeader
     lines: List[ContractLine]
+    customer: str = None
 
     def __repr__(self) -> str:
         return repr_builder(self)

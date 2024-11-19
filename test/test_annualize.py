@@ -4,6 +4,7 @@ from arr import Contract, ContractHeader, ContractLine, annualize
 
 import pytest
 
+
 @pytest.fixture
 def simple_contract():
     return Contract(
@@ -18,8 +19,11 @@ def simple_contract():
         ],
     )
 
+
 def test_sanity():
     assert 1 == 1
 
+
 def test_contract(simple_contract):
     assert type(simple_contract) == Contract
+    assert type(simple_contract.header) == ContractHeader
