@@ -92,7 +92,7 @@ class Contract:
     def __repr__(self) -> str:
         return repr_builder(self)
 
-    def build_df(self) -> pd.DataFrame:
+    def to_df(self) -> pd.DataFrame:
         contract_dict = self.__dict__.copy()
         contract_dict["header"] = self.header.__dict__.copy()
         contract_dict["lines"] = [line.__dict__.copy() for line in self.lines]
