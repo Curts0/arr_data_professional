@@ -1,9 +1,32 @@
-from .contract import ContractHeader, ContractLine
-
+from typing import TYPE_CHECKING
 from datetime import date, timedelta
 from typing import Literal
 from calendar import isleap
 
+# TODO: fix type hinting for annualize func...
+# if TYPE_CHECKING:
+#     from .contract import Contract, ContractLine
+
+from dateutil.relativedelta import relativedelta
+import numpy as np
+
+def get_end_of_month_range(start: date, end: date) -> np.ndarray:
+    """Helper function to get a list of end of month dates.
+
+    Args:
+        start (date): Start date.
+        end (date): End Date.
+
+    Returns:
+        ndarray: Numpy array of dates inbetween.
+    """
+    assert end > start, "end date must be later than start date"
+    end_of_month_range = []
+    working_date = start
+    while working_date < end:
+        end_of_month_range.append(working_date + relativedelta(day=31))
+        working_date = working_date + relativedelta(months=1)
+    return np.array(end_of_month_range)
 
 def active_check(start_date: date, end_date: date, period: date) -> bool:
     """Is the Contract Active?
@@ -91,7 +114,7 @@ def get_contract_term(
 
 
 def annualize(
-    contract: ContractHeader | ContractLine,
+    contract,
     period: date,
     interval_str: INTERVAL,
     generalize_leap_year: bool = True,

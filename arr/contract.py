@@ -1,3 +1,6 @@
+from __future__ import annotations
+from .annualize import annualize, active_check, deferred_check, get_end_of_month_range
+
 from dataclasses import dataclass
 from datetime import date
 from typing import List
@@ -36,7 +39,9 @@ class ContractLine:
         amount (int): Total value of the line.
         start_date (date): The Start Date of the Contract.
         end_date (date): The End Date of the Contract.
-        item_sku (int): To designate item skus
+        product (int): The product purchased by customer.
+        renewable (bool): indicator whether or not product
+            is renewable.
     """
 
     amount: int
@@ -93,6 +98,14 @@ class Contract:
         return repr_builder(self)
 
     def to_df(self) -> pd.DataFrame:
+        """Converts to usable DataFrame.
+
+        Returns:
+            pd.DataFrame: Contract attributes are named as is.
+                contract header attributes will have prefix of
+                'header.' and contract line attributes will
+                have a prefix of 'line.'.
+        """
         contract_dict = self.__dict__.copy()
         contract_dict["header"] = self.header.__dict__.copy()
         contract_dict["lines"] = [line.__dict__.copy() for line in self.lines]
@@ -100,7 +113,58 @@ class Contract:
         df = pd.json_normalize(contract_dict)
         lines = pd.DataFrame.from_dict(df["lines"].iloc[0]).add_prefix("line.")
         df = df.merge(lines, how="cross").drop(columns="lines")
+
+        for col in df.columns:
+            if "date" in col:
+                df[col] = df[col].astype("datetime64[ns]")
+
         return df
+
+    def to_acv_df(self, by_lines: bool = True):
+        # TODO: use the `by_lines` argument to toggle between line and header acv calcs.
+        # See the history of table.py file where this used to be done.
+        df = self.to_df()
+        min_date = min(df.select_dtypes("datetime64").min()).date()
+        max_date = max(df.select_dtypes("datetime64").max()).date()
+
+        range = pd.DataFrame(get_end_of_month_range(min_date, max_date)).rename(
+            columns={0: "period"}
+        )
+        acv_table = range.merge(df, how="cross")
+
+        acv_table["period"] = acv_table["period"].astype("datetime64[ns]")
+
+        acv_table["active"] = acv_table.apply(
+            lambda row: active_check(
+                row["line.start_date"], row["line.end_date"], row["period"]
+            ),
+            axis=1,
+        )
+
+        acv_table["deferred"] = acv_table.apply(
+            lambda row: deferred_check(
+                row["header.booking_date"], row["line.start_date"], row["period"]
+            ),
+            axis=1,
+        )
+
+        acv_table["acv"] = acv_table.apply(
+            lambda row: annualize(
+                ContractLine(
+                    row["line.amount"],
+                    row["line.start_date"].date(),
+                    row["line.end_date"].date(),
+                    row["line.product"],
+                    row["line.renewable"],
+                ),
+                row["period"].date(),
+                "Month",
+                True,
+                False,
+            ),
+            axis=1,
+        )
+        return acv_table
 
     @staticmethod
     def from_df(df: pd.DataFrame):

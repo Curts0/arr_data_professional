@@ -153,8 +153,8 @@ print('performing initial sales')
 for customer in CUSTOMERS["customer"].unique():
 
     if customer in CONTRACTS["customer"].unique():
-
-        print(f"{customer} already in contract list")
+        pass
+        # print(f"{customer} already in contract list")
 
     else:
 
