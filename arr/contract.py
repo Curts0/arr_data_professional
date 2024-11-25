@@ -121,8 +121,9 @@ class Contract:
         return df
 
     def to_acv_df(self, by_lines: bool = True):
-        # TODO: use the `by_lines` argument to toggle between line and header acv calcs.
-        # See the history of table.py file where this used to be done.
+        # TODO: use  *args, **kwargs for more dynamic annualize func
+        # pass through all the options
+
         df = self.to_df()
         min_date = min(df.select_dtypes("datetime64").min()).date()
         max_date = max(df.select_dtypes("datetime64").max()).date()
@@ -134,16 +135,18 @@ class Contract:
 
         acv_table["period"] = acv_table["period"].astype("datetime64[ns]")
 
+        col_name = "line" if by_lines else "header"
+
         acv_table["active"] = acv_table.apply(
             lambda row: active_check(
-                row["line.start_date"], row["line.end_date"], row["period"]
+                row[f"{col_name}.start_date"], row[f"{col_name}.end_date"], row["period"]
             ),
             axis=1,
         )
 
         acv_table["deferred"] = acv_table.apply(
             lambda row: deferred_check(
-                row["header.booking_date"], row["line.start_date"], row["period"]
+                row["header.booking_date"], row[f"{col_name}.start_date"], row["period"]
             ),
             axis=1,
         )
@@ -151,9 +154,9 @@ class Contract:
         acv_table["acv"] = acv_table.apply(
             lambda row: annualize(
                 ContractLine(
-                    row["line.amount"],
-                    row["line.start_date"].date(),
-                    row["line.end_date"].date(),
+                    row[f"{col_name}.amount"],
+                    row[f"{col_name}.start_date"].date(),
+                    row[f"{col_name}.end_date"].date(),
                     row["line.product"],
                     row["line.renewable"],
                 ),
