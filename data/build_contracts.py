@@ -34,7 +34,7 @@ date_cols = [
 ]
 
 for col in date_cols:
-    CONTRACTS[col] = CONTRACTS[col].dt.date
+    CONTRACTS[col] = CONTRACTS[col].astype("datetime64[ns]")
 
 # print(
 #     CONTRACTS.dtypes,
@@ -96,7 +96,7 @@ def initial_sale(customer: str) -> Contract:
 
 
 def renewal(contract: Contract) -> Contract | None:
-    could_renew = True if contract.header.end_date < MAX_DATE else False
+    could_renew = True if contract.header.end_date.date() < MAX_DATE else False
     will_renew = choices([True, False], [RENEWAL_CHANCE, 1 - RENEWAL_CHANCE])[0]
     will_expand = choices([True, False], [EXPANSION_CHANCE, 1 - EXPANSION_CHANCE])[0]
     will_downgrade = choices([True, False], [DOWNGRADE_CHANCE, 1 - DOWNGRADE_CHANCE])[0]
