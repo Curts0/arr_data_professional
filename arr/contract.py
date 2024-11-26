@@ -120,7 +120,9 @@ class Contract:
 
         return df
 
-    def to_acv_df(self, by_lines: bool = True):
+    def to_annualize_df(
+        self, by_lines: bool = True, arr: bool = True, deferred: bool = True
+    ):
         # TODO: use  *args, **kwargs for more dynamic annualize func
         # pass through all the options
 
@@ -131,30 +133,34 @@ class Contract:
         range = pd.DataFrame(get_end_of_month_range(min_date, max_date)).rename(
             columns={0: "period"}
         )
-        acv_table = range.merge(df, how="cross")
+        df = range.merge(df, how="cross")
 
-        acv_table["period"] = acv_table["period"].astype("datetime64[ns]")
+        df["period"] = df["period"].astype("datetime64[ns]")
 
         col_name = "line" if by_lines else "header"
 
-        acv_table["active"] = acv_table.apply(
+        df["active"] = df.apply(
             lambda row: active_check(
-                row[f"{col_name}.start_date"], row[f"{col_name}.end_date"], row["period"]
+                row[f"{col_name}.start_date"],
+                row[f"{col_name}.end_date"],
+                row["period"],
             ),
             axis=1,
         )
 
-        acv_table["deferred"] = acv_table.apply(
+        df["deferred"] = df.apply(
             lambda row: deferred_check(
-                row["header.booking_date"], row[f"{col_name}.start_date"], row["period"]
+                row["header.booking_date"], row[f"header.start_date"], row["period"]
             ),
             axis=1,
         )
 
-        acv_table["acv"] = acv_table.apply(
+        annualize_name = "ARR" if arr else "ACV"
+
+        df[annualize_name] = df.apply(
             lambda row: annualize(
                 ContractLine(
-                    row[f"{col_name}.amount"],
+                    row[f"line.amount"],
                     row[f"{col_name}.start_date"].date(),
                     row[f"{col_name}.end_date"].date(),
                     row["line.product"],
@@ -167,7 +173,24 @@ class Contract:
             ),
             axis=1,
         )
-        return acv_table
+
+        cols = ["period", "id", "line.product"]
+
+        if arr:
+            df = df[df["line.renewable"] == True]
+
+        if deferred:
+            df = df[(df["active"] == True) | (df["deferred"] == True)]
+        else:
+            df = df[df["active"] == True]
+
+        df = pd.DataFrame(df[cols + [annualize_name]].groupby(cols).sum()).unstack(
+            level=0
+        )
+
+        df.fillna(0, inplace=True)
+
+        return df
 
     @staticmethod
     def from_df(df: pd.DataFrame):
