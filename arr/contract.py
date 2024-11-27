@@ -201,15 +201,15 @@ class Contract:
             df.iloc[0]["id"],
             ContractHeader(
                 df.iloc[0]["header.amount"],
-                df.iloc[0]["header.start_date"],
-                df.iloc[0]["header.end_date"],
-                df.iloc[0]["header.booking_date"],
+                df.iloc[0]["header.start_date"].date(),
+                df.iloc[0]["header.end_date"].date(),
+                df.iloc[0]["header.booking_date"].date(),
             ),
             [
                 ContractLine(
                     line[1]["line.amount"],
-                    line[1]["line.start_date"],
-                    line[1]["line.end_date"],
+                    line[1]["line.start_date"].date(),
+                    line[1]["line.end_date"].date(),
                     line[1]["line.product"],
                     line[1]["line.renewable"],
                 )

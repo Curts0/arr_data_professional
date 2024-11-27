@@ -7,7 +7,7 @@ Building ARR is simple, but that doesn't make it easy. The definitions seem to b
 
 ## Introduction
 
-The goal of this write up is to share my knowledge on building ARR datasets. I've built and scaled these datasets for companies less than $\text{\$30M}$ and more than $\text{\$1B}$ ARR. All the way from ingestion of source systems to desigining the visuals.
+The goal of this write up is to share my knowledge on building ARR datasets. I've built and scaled these datasets for companies less than $30M and more than $1B ARR. All the way from ingestion of source systems to desigining the visuals.
 
 I'll explain how it all works, show some mistakes I've made, and make recommendations. Whether you are 12 sheets deep in excel or lost in spark configurations, as long as you are dealing with ARR on the data side, this is written for you. I'll start with what ARR is and how to calculate it. Then I'll dive into the customer cube. Build on top of our cube with all the different cuts and measures.
 
