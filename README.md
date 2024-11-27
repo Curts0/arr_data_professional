@@ -17,10 +17,10 @@ In terms of Finance and accounting, ARR is not to be confused with Revenue Recog
 
 ## Table of Contents
 
-- [What is ARR? Part 1](2-what-is-arr-part-1.ipynb)
-- [What is ARR? Part 2](3-what-is-arr-part-2.ipynb)
-- [What is ARR? Part 3](4-what-is-arr-part-3.ipynb)
-- [The Customer Cube](5-the-customer-cube.ipynb)
+- [What is ARR? Part 1](1-what-is-arr-part-1.ipynb)
+- [What is ARR? Part 2](2-what-is-arr-part-2.ipynb)
+- [What is ARR? Part 3](3-what-is-arr-part-3.ipynb)
+- [The Customer Cube](4-the-customer-cube.ipynb)
 
 ##### Packages used in Notebooks
 
