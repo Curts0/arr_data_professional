@@ -10,6 +10,7 @@ from calendar import isleap
 from dateutil.relativedelta import relativedelta
 import numpy as np
 
+
 def get_end_of_month_range(start: date, end: date) -> np.ndarray:
     """Helper function to get a list of end of month dates.
 
@@ -28,6 +29,7 @@ def get_end_of_month_range(start: date, end: date) -> np.ndarray:
         working_date = working_date + relativedelta(months=1)
     return np.array(end_of_month_range)
 
+
 def active_check(start_date: date, end_date: date, period: date) -> bool:
     """Is the Contract Active?
 
@@ -37,13 +39,15 @@ def active_check(start_date: date, end_date: date, period: date) -> bool:
     return start_date <= period <= end_date
 
 
-def deferred_check(bookings_date: date, start_date: date, period: date) -> bool:
+def deferred_check(
+    bookings_date: date, header_start_date: date, line_start_date: date, period: date
+) -> bool:
     """Is the Contract Deferred?
 
     `True` == Yes contract is deferred in period.
     `False`== No contract is not deferred in period.
     """
-    return bookings_date < start_date and period < start_date
+    return bookings_date < header_start_date and period < header_start_date and line_start_date == header_start_date
 
 
 def count_leap_days(start_date: date, end_date: date) -> int:
@@ -164,6 +168,7 @@ def annualize(
         print(f"Generalize Leap Year: {generalize_leap_year}")
         print(f"Time Interval: {interval_str} - {time_interval}")
         print(f"Contract Term: {contract_term}")
+        print(f"{contract.amount} * ({time_interval}/{contract_term})")
 
     # 5
     try:

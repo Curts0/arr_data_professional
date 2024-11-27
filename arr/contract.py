@@ -150,7 +150,10 @@ class Contract:
 
         df["deferred"] = df.apply(
             lambda row: deferred_check(
-                row["header.booking_date"], row[f"header.start_date"], row["period"]
+                row["header.booking_date"],
+                row["header.start_date"],
+                row["line.start_date"],
+                row["period"],
             ),
             axis=1,
         )
