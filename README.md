@@ -1,4 +1,4 @@
-# ARR for Data Profressionals
+# ARR for Data Professionals
 
 ## Preamble
 
