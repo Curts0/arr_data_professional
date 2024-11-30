@@ -8,6 +8,7 @@ from typing import List
 import pandas as pd
 
 
+
 @dataclass
 class ContractHeader:
     """Dataclass to handle the header of a contract.
@@ -97,6 +98,10 @@ class Contract:
     def __repr__(self) -> str:
         return repr_builder(self)
 
+    def __post_init__(self):
+        if self.customer is None:
+            self.customer = 'Example Customer'
+
     def to_df(self) -> pd.DataFrame:
         """Converts to usable DataFrame.
 
@@ -120,80 +125,9 @@ class Contract:
 
         return df
 
-    def to_annualize_df(
-        self, by_lines: bool = True, arr: bool = True, deferred: bool = True
-    ):
-        # TODO: use  *args, **kwargs for more dynamic annualize func
-        # pass through all the options
-
+    def to_annualize_df(self, *args, **kwargs):
         df = self.to_df()
-        min_date = min(df.select_dtypes("datetime64").min()).date()
-        max_date = max(df.select_dtypes("datetime64").max()).date()
-
-        range = pd.DataFrame(get_end_of_month_range(min_date, max_date)).rename(
-            columns={0: "period"}
-        )
-        df = range.merge(df, how="cross")
-
-        df["period"] = df["period"].astype("datetime64[ns]")
-
-        col_name = "line" if by_lines else "header"
-
-        df["active"] = df.apply(
-            lambda row: active_check(
-                row[f"{col_name}.start_date"],
-                row[f"{col_name}.end_date"],
-                row["period"],
-            ),
-            axis=1,
-        )
-
-        df["deferred"] = df.apply(
-            lambda row: deferred_check(
-                row["header.booking_date"],
-                row["header.start_date"],
-                row["line.start_date"],
-                row["period"],
-            ),
-            axis=1,
-        )
-
-        annualize_name = "ARR" if arr else "ACV"
-
-        df[annualize_name] = df.apply(
-            lambda row: annualize(
-                ContractLine(
-                    row[f"line.amount"],
-                    row[f"{col_name}.start_date"].date(),
-                    row[f"{col_name}.end_date"].date(),
-                    row["line.product"],
-                    row["line.renewable"],
-                ),
-                row["period"].date(),
-                "Month",
-                True,
-                False,
-            ),
-            axis=1,
-        )
-
-        cols = ["period", "id", "line.product"]
-
-        if arr:
-            df = df[df["line.renewable"] == True]
-
-        if deferred:
-            df = df[(df["active"] == True) | (df["deferred"] == True)]
-        else:
-            df = df[df["active"] == True]
-
-        df = pd.DataFrame(df[cols + [annualize_name]].groupby(cols).sum()).unstack(
-            level=0
-        )
-
-        df.fillna(0, inplace=True)
-
-        return df
+        return annualize_df(df, *args, **kwargs)
 
     @staticmethod
     def from_df(df: pd.DataFrame):
@@ -217,3 +151,79 @@ class Contract:
             ],
             df.iloc[0]["customer"],
         )
+
+
+
+def annualize_df(
+    df, by_lines: bool = True, arr: bool = True, deferred: bool = True
+):
+    # TODO: use  *args, **kwargs for more dynamic annualize func
+    # pass through all the options
+
+    min_date = min(df.select_dtypes("datetime64").min()).date()
+    max_date = max(df.select_dtypes("datetime64").max()).date()
+
+    range = pd.DataFrame(get_end_of_month_range(min_date, max_date)).rename(
+        columns={0: "period"}
+    )
+    df = range.merge(df, how="cross")
+
+    df["period"] = df["period"].astype("datetime64[ns]")
+
+    col_name = "line" if by_lines else "header"
+
+    df["active"] = df.apply(
+        lambda row: active_check(
+            row[f"{col_name}.start_date"],
+            row[f"{col_name}.end_date"],
+            row["period"],
+        ),
+        axis=1,
+    )
+
+    df["deferred"] = df.apply(
+        lambda row: deferred_check(
+            row["header.booking_date"],
+            row["header.start_date"],
+            row["line.start_date"],
+            row["period"],
+        ),
+        axis=1,
+    )
+
+    annualize_name = "ARR" if arr else "ACV"
+
+    df[annualize_name] = df.apply(
+        lambda row: annualize(
+            ContractLine(
+                row[f"line.amount"],
+                row[f"{col_name}.start_date"].date(),
+                row[f"{col_name}.end_date"].date(),
+                row["line.product"],
+                row["line.renewable"],
+            ),
+            row["period"].date(),
+            "Month",
+            True,
+            False,
+        ),
+        axis=1,
+    )
+
+    cols = ["period", "customer", "id", "line.product"]
+
+    if arr:
+        df = df[df["line.renewable"] == True]
+
+    if deferred:
+        df = df[(df["active"] == True) | (df["deferred"] == True)]
+    else:
+        df = df[df["active"] == True]
+
+    df = pd.DataFrame(df[cols + [annualize_name]].groupby(cols).sum()).unstack(
+        level=0
+    )
+
+    df.fillna(0, inplace=True)
+
+    return df
