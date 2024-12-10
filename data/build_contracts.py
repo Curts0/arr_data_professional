@@ -1,3 +1,6 @@
+"""This is slop. I'm sorry."""
+
+
 from random import choices, choice
 from typing import List
 from datetime import date
