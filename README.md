@@ -1,7 +1,5 @@
 # ARR for Data Professionals
 
-## Preamble
-
 <div class="alert alert-block alert-info">
 Building ARR is simple, but that doesn't make it easy. The definitions seem to be where the problems take root. Depending on who you talk to or where you work, definitions can vary.<b> The important thing is consistency.</b> ARR is shiny and will get a lot of attention, so you better know what you're doing.</div>
 
@@ -21,4 +19,4 @@ In terms of Finance and accounting, ARR is not to be confused with Revenue Recog
 - [What is ARR? Part 2](2-what-is-arr-part-2.ipynb)
 - [What is ARR? Part 3](3-what-is-arr-part-3.ipynb)
 - [The Customer Cube](4-the-customer-cube.ipynb)
-
+- [The Cuts](5-the-cuts.ipynb)
