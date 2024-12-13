@@ -11,6 +11,8 @@ import pandas as pd
 import numpy as np
 from dateutil.relativedelta import relativedelta as rd
 
+print('generating fake contracts...')
+
 MIN_DATE = date(2020, 1, 1)
 MAX_DATE = date(2026, 12, 31)
 START_DATES = pd.date_range(MIN_DATE, MAX_DATE)
@@ -26,7 +28,7 @@ PRODUCTS.set_index("key", inplace=True)
 PRODUCT_WEIGHTS = np.arange(0, 1, 1 / len(PRODUCTS))[::-1]
 PRODUCT_COUNT = len(PRODUCTS["product_name"].unique())
 
-print('reading manually added contracts')
+print('reading manually added contracts...')
 CONTRACTS = pd.read_excel("data/saas_corp.xlsx", "contract")
 date_cols = [
     "header.start_date",
@@ -152,7 +154,7 @@ def renewal(contract: Contract) -> Contract | None:
 
 
 # initial sales
-print('performing initial sales')
+print('performing initial sales...')
 for customer in CUSTOMERS["customer"].unique():
 
     if customer in CONTRACTS["customer"].unique():
@@ -167,10 +169,13 @@ for customer in CUSTOMERS["customer"].unique():
 
 # subsequent renewals
 # this is so badly written, sorry.
-print('performing subsequent renewals')
+print('performing subsequent renewals...')
 renew_cycle = True
+renew_cycle_count = 0
 no_more_renewal = []
 while renew_cycle:
+    renew_cycle_count += 1
+    print(f'performing renewal cycle {renew_cycle_count}...')
     next_cycle = False
     contracts_to_check = (
         CONTRACTS[["customer", "id"]].groupby("customer").max()["id"].to_numpy()
@@ -185,3 +190,5 @@ while renew_cycle:
             CONTRACTS = pd.concat([df, CONTRACTS], ignore_index=True)
             next_cycle = True
     renew_cycle = next_cycle
+
+print(f'Contracts generated... see `CONTRACTS` variable')

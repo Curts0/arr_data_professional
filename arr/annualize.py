@@ -47,7 +47,11 @@ def deferred_check(
     `True` == Yes contract is deferred in period.
     `False`== No contract is not deferred in period.
     """
-    return bookings_date < header_start_date and period < header_start_date and line_start_date == header_start_date
+    return (
+        bookings_date < header_start_date
+        and period < header_start_date
+        and line_start_date == header_start_date
+    )
 
 
 def count_leap_days(start_date: date, end_date: date) -> int:
