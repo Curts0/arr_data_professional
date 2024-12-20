@@ -11,7 +11,7 @@ I'll explain how it all works, show some mistakes I've made, and make recommenda
 
 My goal is to generalize the code as much as possible. So, python with the usual data stack (pandas, numpy, etc.).
 
-In terms of Finance and accounting, ARR is not to be confused with Revenue Recognition. ARR is Non-[GAAP](https://en.wikipedia.org/wiki/Accounting_standard). That distinction, I think, adds to a lot of chatter. [This article](https://sensiba.com/resources/insights/what-you-need-to-know-about-annual-recurring-revenue-and-gaap-revenue-recognition/) explains the difference well. Which means, everything I explain is not a law or notable standard. I'm just putting on paper everything I've been taught and been able to soak up from some pretty smart people.
+ARR is Non-[GAAP](https://en.wikipedia.org/wiki/Accounting_standard). That distinction, is a blessing and a curse. Which means, everything I explain is not a law or notable standard. I'm putting on *paper* everything I've been taught and been able to soak up from some pretty smart people. Remember, **the important thing is consistency.**
 
 ## Table of Contents
 

@@ -156,7 +156,7 @@ class Contract:
 
 def annualize_df(
     df, by_lines: bool = True, arr: bool = True, deferred: bool = True
-):
+) -> pd.DataFrame:
     # TODO: use  *args, **kwargs for more dynamic annualize func
     # pass through all the options
 
