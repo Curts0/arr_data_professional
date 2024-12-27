@@ -5,13 +5,17 @@ Building ARR is simple, but that doesn't make it easy. The definitions seem to b
 
 ## Introduction
 
-The goal of this write up is to share knowledge on building ARR datasets. I've built and scaled ARR datasets for companies with $30 million ARR to $1 billion ARR. All the way from source ingestion to visuals.
+The goal of this write up is to share knowledge on building ARR datasets. I've built and scaled these datasets for companies with $30 million ARR to $1 billion ARR. All the way from ingestion of source systems to building the dashboards.
 
 I'll explain how it all works, show the many mistakes I've made, and make recommendations. Whether you are 12 sheets deep in excel or lost in spark configurations, as long as you are dealing with ARR on the data side, this is written for you. I'll start with what ARR is and how to calculate it. Then I'll dive into the customer cube. Build on top of our cube with all the different cuts and measures.
 
 My goal is to generalize the code as much as possible. So, python with the usual data stack (pandas, numpy, matplotlib, etc.).
 
 ARR is a financial metric, but it's non-[GAAP](https://en.wikipedia.org/wiki/Accounting_standard). That distinction, I think, is cause for much of the confusion around ARR. Which means everything I explain is not a law or notable standard. I'm just putting on paper everything I've been taught and been able to soak up from some pretty smart people.
+
+<div class="alert alert-block alert-info">
+This is not complete. I add to it when I am able. Please submit PR's with corrections.
+</div>
 
 ## Table of Contents
 
